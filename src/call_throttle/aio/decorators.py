@@ -1,7 +1,7 @@
 from asyncio import Lock
 from functools import wraps
 
-from ..throttle import Throttle
+from .throttle import Throttle
 
 
 def throttle(calls, period, raise_on_throttle=False):
@@ -36,7 +36,7 @@ def throttle(calls, period, raise_on_throttle=False):
         async def wrapper(*args, **kwargs):
 
             async with lock:
-                await thr.call_async()
+                await thr.call()
 
             return await coro(*args, **kwargs)
 
