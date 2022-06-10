@@ -1,13 +1,13 @@
+import asyncio
+import threading
 from functools import wraps
-from threading import RLock
 
-from .throttle import Throttle
+from .throttle import Throttle, AsyncThrottle
 
 
 def throttle(calls, period, raise_on_throttle=False):
-    '''
-    A throttle decorator factory used to limit function calls during the
-    defined time period.
+    """A throttle decorator factory used to limit function or asyncio coroutine
+    calls during the defined time period.
 
     Args:
         calls (int): The maximum number of function calls within a time period
@@ -17,28 +17,48 @@ def throttle(calls, period, raise_on_throttle=False):
         raise_on_throttle (bool): A flag indicating whether to raise an
             exception when throttling.
 
+    Returns:
+        A decorator suited for functions and asyncio coroutines.
+
+    Raises:
+        ThrottleException (when raise_on_throttle is True and throttle occurs)
+
     Usage:
         >>> import datetime
         >>> from call_throttle import throttle
         >>> @throttle(calls=1, period=datetime.timedelata(seconds=1))
         >>> def func():
         ...     pass
-
-    Raises:
-        ThrottleException (when raise_on_throttle is True and throttle occurs)
-    '''
+        >>> @throttle(calls=10, period=datetime.timedelata(milliseconds=100))
+        >>> async def coro():
+        ...     pass
+    """
 
     def decorator(func):
-        thr = Throttle(calls, period, raise_on_throttle)
-        lock = RLock()
 
-        @wraps(func)
-        def wrapper(*args, **kwargs):
+        if asyncio.iscoroutinefunction(func):
+            thr = AsyncThrottle(calls, period, raise_on_throttle)
+            lock = asyncio.Lock()
 
-            with lock:
-                thr.call()
+            @wraps(func)
+            async def wrapper(*args, **kwargs):
 
-            return func(*args, **kwargs)
+                async with lock:
+                    await thr.call()
+
+                return await func(*args, **kwargs)
+
+        else:
+            thr = Throttle(calls, period, raise_on_throttle)
+            lock = threading.RLock()
+
+            @wraps(func)
+            def wrapper(*args, **kwargs):
+
+                with lock:
+                    thr.call()
+
+                return func(*args, **kwargs)
 
         return wrapper
 

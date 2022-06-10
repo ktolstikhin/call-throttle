@@ -1,2 +1,2 @@
 class ThrottleException(Exception):
-    pass
+    ...

@@ -24,7 +24,6 @@ import asyncio
 from datetime import timedelta
 
 from call_throttle import throttle
-from call_throttle.aio import throttle as aio_throttle
 
 
 @throttle(calls=1, period=timedelta(seconds=1))
@@ -32,7 +31,7 @@ def func():
     time.sleep(1)
 
 
-@aio_throttle(calls=1, period=timedelta(seconds=2))
+@throttle(calls=1, period=timedelta(seconds=2))
 async def coro():
     await asyncio.sleep(1)
 ```
