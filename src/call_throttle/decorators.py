@@ -1,5 +1,4 @@
 import asyncio
-import threading
 from functools import wraps
 
 from .throttle import Throttle, AsyncThrottle
@@ -24,12 +23,14 @@ def throttle(calls, period, raise_on_throttle=False):
         ThrottleException (when raise_on_throttle is True and throttle occurs)
 
     Usage:
-        >>> import datetime
+        >>> from datetime import timedelta
         >>> from call_throttle import throttle
-        >>> @throttle(calls=1, period=datetime.timedelata(seconds=1))
+        >>>
+        >>> @throttle(calls=1, period=timedelata(seconds=1))
         >>> def func():
         ...     pass
-        >>> @throttle(calls=10, period=datetime.timedelata(milliseconds=100))
+        >>>
+        >>> @throttle(calls=10, period=timedelata(milliseconds=100))
         >>> async def coro():
         ...     pass
     """
@@ -38,26 +39,18 @@ def throttle(calls, period, raise_on_throttle=False):
 
         if asyncio.iscoroutinefunction(func):
             thr = AsyncThrottle(calls, period, raise_on_throttle)
-            lock = asyncio.Lock()
 
             @wraps(func)
             async def wrapper(*args, **kwargs):
-
-                async with lock:
-                    await thr.call()
-
+                await thr.wait()
                 return await func(*args, **kwargs)
 
         else:
             thr = Throttle(calls, period, raise_on_throttle)
-            lock = threading.RLock()
 
             @wraps(func)
             def wrapper(*args, **kwargs):
-
-                with lock:
-                    thr.call()
-
+                thr.wait()
                 return func(*args, **kwargs)
 
         return wrapper
