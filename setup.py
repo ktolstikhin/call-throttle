@@ -2,7 +2,7 @@ from pathlib import Path
 
 from setuptools import setup, find_packages
 
-from src import call_throttle
+import call_throttle
 
 
 setup(
@@ -15,8 +15,8 @@ setup(
     author_email='k.tolstikhin@gmail.com',
     url='https://github.com/ktolstikhin/call-throttle.git',
     license='MIT',
-    package_dir={'': 'src'},
-    packages=find_packages(where='src'),
+    package_dir={'': '.'},
+    packages=find_packages(where='.'),
     python_requires='>=3.7',
     install_requires=[],
     keywords=[

@@ -1,4 +1,5 @@
 import asyncio
+from datetime import timedelta
 from functools import wraps
 
 from .throttle import Throttle, AsyncThrottle
@@ -11,8 +12,8 @@ def throttle(calls, period, raise_on_throttle=False):
     Args:
         calls (int): The maximum number of function calls within a time period
             before throttling.
-        period (datetime.timedelta): A time period within which the throttling
-            applies to function calls.
+        period (int, float, datetime.timedelta): A time period within which the
+            throttling applies to function calls. Seconds or timedelta.
         raise_on_throttle (bool): A flag indicating whether to raise an
             exception when throttling.
 
@@ -35,8 +36,10 @@ def throttle(calls, period, raise_on_throttle=False):
         ...     pass
     """
 
-    def decorator(func):
+    if isinstance(period, timedelta):
+        period = period.total_seconds()
 
+    def decorator(func):
         if asyncio.iscoroutinefunction(func):
             thr = AsyncThrottle(calls, period, raise_on_throttle)
 
