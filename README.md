@@ -26,14 +26,14 @@ from datetime import timedelta
 from call_throttle import throttle
 
 
-@throttle(calls=1, period=timedelta(seconds=1))
+@throttle(calls=1, period=timedelta(seconds=2))
 def func():
     time.sleep(1)
 
 
-@throttle(calls=1, period=timedelta(seconds=2))
+@throttle(calls=2, period=0.2)
 async def coro():
-    await asyncio.sleep(1)
+    await asyncio.sleep(0.05)
 ```
 If passing `raise_on_throttle=True` to `@throttle(...)`, then a `call_throttle.ThrottleException` is raised when a decorated function or coroutine is called more times than the defined `calls` limit within the specified time `period`.
 

@@ -7,18 +7,17 @@ from .exceptions import ThrottleException
 
 
 class ThrottleBase(ABC):
-    def __init__(self, calls, period, raise_on_throttle=False):
+    def __init__(self, calls: int, period: int | float, raise_on_throttle: bool = False):
         self._throttle_calls = calls
         self._throttle_period = period
         self._last_call_time = 0
         self._raise_on_throttle = raise_on_throttle
         self._calls = 0
 
-    def __enter__(self):
+    def __enter__(self) -> float:
         elapsed_time = time.perf_counter() - self._last_call_time
         self._calls += 1
         sleep_time = 0
-
         if elapsed_time < self._throttle_period:
             if self._calls >= self._throttle_calls:
                 if self._raise_on_throttle:
@@ -26,21 +25,27 @@ class ThrottleBase(ABC):
 
                 sleep_time = self._throttle_period - elapsed_time
                 self._calls = 0
-
         else:
             self._calls = 0
-
         return sleep_time
 
-    def __exit__(self, exc_type, exc_value, exc_traceback):
+    def __exit__(self, *_):
         self._last_call_time = time.perf_counter()
 
+
+class ThrottleBaseSync(ThrottleBase):
     @abstractmethod
     def wait(self):
         ...
 
 
-class Throttle(ThrottleBase):
+class ThrottleBaseAsync(ThrottleBase):
+    @abstractmethod
+    async def wait(self):
+        ...
+
+
+class Throttle(ThrottleBaseSync):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._lock = threading.RLock()
@@ -51,7 +56,7 @@ class Throttle(ThrottleBase):
                 time.sleep(throttle)
 
 
-class AsyncThrottle(ThrottleBase):
+class AsyncThrottle(ThrottleBaseAsync):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._lock = asyncio.Lock()

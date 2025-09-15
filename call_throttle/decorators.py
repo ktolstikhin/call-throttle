@@ -1,11 +1,15 @@
 import asyncio
 from datetime import timedelta
 from functools import wraps
+from typing import Any, Callable, TypeVar, Coroutine
 
 from .throttle import Throttle, AsyncThrottle
 
 
-def throttle(calls, period, raise_on_throttle=False):
+T = TypeVar('T')
+
+
+def throttle(calls: int, period: int | float | timedelta, raise_on_throttle: bool = False) -> Callable:
     """A throttle decorator factory used to limit function or asyncio coroutine
     calls during the defined time period.
 
@@ -31,30 +35,30 @@ def throttle(calls, period, raise_on_throttle=False):
         >>> def func():
         ...     pass
         >>>
-        >>> @throttle(calls=10, period=timedelata(milliseconds=100))
+        >>> @throttle(calls=10, period=0.1)
         >>> async def coro():
         ...     pass
     """
-
     if isinstance(period, timedelta):
         period = period.total_seconds()
 
-    def decorator(func):
+    def decorator(func: Callable[..., T]) -> Callable[..., T | Coroutine]:
         if asyncio.iscoroutinefunction(func):
             thr = AsyncThrottle(calls, period, raise_on_throttle)
 
             @wraps(func)
-            async def wrapper(*args, **kwargs):
+            async def async_wrapper(*args: Any, **kwargs: Any) -> Coroutine:
                 await thr.wait()
                 return await func(*args, **kwargs)
 
-        else:
-            thr = Throttle(calls, period, raise_on_throttle)
+            return async_wrapper
 
-            @wraps(func)
-            def wrapper(*args, **kwargs):
-                thr.wait()
-                return func(*args, **kwargs)
+        thr = Throttle(calls, period, raise_on_throttle)
+
+        @wraps(func)
+        def wrapper(*args: Any, **kwargs: Any) -> T:
+            thr.wait()
+            return func(*args, **kwargs)
 
         return wrapper
 

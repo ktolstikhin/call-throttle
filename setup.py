@@ -17,7 +17,7 @@ setup(
     license='MIT',
     package_dir={'': '.'},
     packages=find_packages(where='.'),
-    python_requires='>=3.7',
+    python_requires='>=3.9',
     install_requires=[],
     keywords=[
         'decorator',
@@ -26,7 +26,7 @@ setup(
     ],
     classifiers=[
         'License :: OSI Approved :: MIT License',
-        'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3.9',
         'Operating System :: OS Independent',
         'Intended Audience :: Developers',
     ],
