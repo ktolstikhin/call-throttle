@@ -1,7 +1,7 @@
 import asyncio
 from datetime import timedelta
 from functools import wraps
-from typing import Any, Callable, TypeVar, Coroutine
+from typing import Any, Callable, TypeVar, Coroutine, Union
 
 from .throttle import Throttle, AsyncThrottle
 
@@ -9,7 +9,7 @@ from .throttle import Throttle, AsyncThrottle
 T = TypeVar('T')
 
 
-def throttle(calls: int, period: int | float | timedelta, raise_on_throttle: bool = False) -> Callable:
+def throttle(calls: int, period: Union[int, float, timedelta], raise_on_throttle: bool = False) -> Callable:
     """A throttle decorator factory used to limit function or asyncio coroutine
     calls during the defined time period.
 
@@ -42,7 +42,7 @@ def throttle(calls: int, period: int | float | timedelta, raise_on_throttle: boo
     if isinstance(period, timedelta):
         period = period.total_seconds()
 
-    def decorator(func: Callable[..., T]) -> Callable[..., T | Coroutine]:
+    def decorator(func: Callable[..., T]) -> Callable[..., Union[T, Coroutine]]:
         if asyncio.iscoroutinefunction(func):
             thr = AsyncThrottle(calls, period, raise_on_throttle)
 

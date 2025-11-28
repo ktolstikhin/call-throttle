@@ -2,12 +2,13 @@ import time
 import asyncio
 import threading
 from abc import ABC, abstractmethod
+from typing import Union
 
 from .exceptions import ThrottleException
 
 
 class ThrottleBase(ABC):
-    def __init__(self, calls: int, period: int | float, raise_on_throttle: bool = False):
+    def __init__(self, calls: int, period: Union[int, float], raise_on_throttle: bool = False):
         self._throttle_calls = calls
         self._throttle_period = period
         self._last_call_time = 0

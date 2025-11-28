@@ -13,7 +13,7 @@ Use [pip](https://pip.pypa.io/en/stable/) package installer for Python:
 ```bash
 python -m pip install --upgrade call-throttle
 ```
-Make sure you have Python 3.7 or later installed.
+Make sure you have Python 3.9 or later installed.
 
 ## Usage
 
